@@ -3,12 +3,27 @@ require "socket"
 class Router
   def initialize
     @routes = {
-      "get" => Hash.new
+      "get" => Hash.new,
+      "post" => Hash.new,
+      "put" => Hash.new,
+      "delete" => Hash.new,
     }
   end
 
   def get url, &block
     @routes["get"][url] = block
+  end
+
+  def post url, &block
+    @routes["post"][url] = block
+  end
+
+  def put url, &block
+    @routes["put"][url] = block
+  end
+
+  def delete url, &block
+    @routes["delete"][url] = block
   end
 
   def handle method, url
@@ -28,11 +43,13 @@ class Router
     begin
       body = @routes[method.downcase][url].call result
       result[:body] = body
-    rescue
+    rescue StandardError => error
       result[:body] = "500 Internal Server Error"
       result[:status] = 500
       result[:headers] = Hash.new
       result[:headers]["Content-Type"] = "text/html"
+      puts error
+      puts error.backtrace
     end
 
     return result
